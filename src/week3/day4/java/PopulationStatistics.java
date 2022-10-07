@@ -6,7 +6,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PopulationStatistics {
@@ -115,23 +117,46 @@ public class PopulationStatistics {
         return populationMove.getFromSido() + "," + populationMove.getToSido() + "\n";
     }
 
-    public static void main(String[] args) throws IOException {
-
-        String address = "C:\\Users\\baeks\\OneDrive\\바탕 화면\\221007\\LikeLionJava-221007\\from_to.txt";
-        PopulationStatistics populationStatistics = new PopulationStatistics();
-        List<PopulationMove> pml = populationStatistics.readByLine(address);
-
-
-        for(PopulationMove pm : pml) {
-            System.out.printf("전입:%s, 전출:%s\n",pm.getFromSido(), pm.getToSido());
+    public Map<Integer, Integer> heatmapIdxMap
+    public Map<String, Integer> getMoveCntMap(List<PopulationMove> pml) {
+        Map<String, Integer> moveCntMap = new HashMap<>();
+        //A~Z
+        for (PopulationMove pm : pml) {
+            String key = pm.getFromSido() + "," + pm.getToSido();
+            if(moveCntMap.get(key) == null) {
+                moveCntMap.put(key,1);
+            }
+            moveCntMap.put(key, moveCntMap.get(key) +1);
         }
 
-
-
-
-
-
+        return moveCntMap;
 
     }
+    public static void main(String[] args) throws IOException {
+
+        String address = "./from_to.txt";
+        PopulationStatistics ps = new PopulationStatistics();
+        List<PopulationMove> pml = ps.readByLine(address);
+        //A~Z
+
+        Map<String, Integer> map = ps.getMoveCntMap(pml);
+        String targetFilename = "for_heatmap.txt";
+        ps.createAFile(targetFilename);
+        List<String> cntResult = new ArrayList<>();
+        for (String key : map.keySet()) {
+            String[] fromto = key.split(",");
+            String s = String.format("[%s, %s, %d]\n",fromto[0], fromto[1], map.get(key));
+
+            cntResult.add(s);
+        }
+
+        ps.write(cntResult, targetFilename);
+
+
+
+
+
+
+        }
 
 }
